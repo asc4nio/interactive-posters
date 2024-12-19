@@ -3,18 +3,58 @@ const props = defineProps({
   assets: Object,
 });
 import { OrbitControls } from "@tresjs/cientos";
-import { DoubleSide, EquirectangularReflectionMapping } from "three";
+import { DoubleSide, EquirectangularReflectionMapping, Vector2 } from "three";
 
-const { fitSize } = useWindowSize();
-const { scene } = useTres();
+// import { EffectComposer, UnrealBloom } from "@tresjs/post-processing/three";
+
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+
+const { fitSize, width, height } = useWindowSize();
+const { scene, camera, renderer } = useTres();
+const { onBeforeRender, render } = useLoop();
 
 props.assets.hdr.mapping = EquirectangularReflectionMapping;
 scene.value.environment = props.assets.hdr;
+
+const diamondRef = shallowRef();
+
+let renderScene, bloomPass, outputPass, composer;
+
+onBeforeRender(({ delta, elapsed }) => {
+  if (diamondRef.value) {
+    diamondRef.value.rotation.y += delta * 0.1;
+  }
+});
+
+render(({ renderer, scene, camera }) => {
+  composer.render();
+});
+
+onMounted(() => {
+  renderScene = new RenderPass(scene.value, camera.value);
+  bloomPass = new UnrealBloomPass(
+    new Vector2(width.value, height.value),
+    0.2, // strength
+    0.1, // radius
+    1 // threshold
+  );
+
+  outputPass = new OutputPass();
+
+  composer = new EffectComposer(renderer.value);
+  composer.addPass(renderScene);
+  composer.addPass(bloomPass);
+  composer.addPass(outputPass);
+});
 </script>
 
 <template>
   <PixelPerspectiveCamera :perspective="0">
-    <TresMesh :position="[0, 0, -fitSize]" :scale="fitSize * 1.2">
+    <!-- PLANE -->
+    <TresMesh :position="[0, 0, -fitSize * 2]" :scale="fitSize * 2.2">
       <TresPlaneGeometry :args="[1, 1]" />
       <TresMeshBasicMaterial
         :map="props.assets.textures[1024]"
@@ -37,11 +77,12 @@ scene.value.environment = props.assets.hdr;
 
     <!-- DIAMOND -->
     <TresMesh
-      :scale="0.3"
+      ref="diamondRef"
+      :scale="0.25"
       :geometry="props.assets.meshes.diamond.scene.children[0].geometry"
     >
       <TresMeshPhysicalMaterial
-        :color="0xffffff"
+        :color="0xeffaff"
         :metalness="0"
         :roughness="0"
         :ior="2.4"
@@ -60,6 +101,11 @@ scene.value.environment = props.assets.hdr;
       />
     </TresMesh>
   </TresGroup>
+
   <TresAmbientLight :intensity="1" />
   <TresDirectionalLight :position="[0, 0, 1]" :intensity="1000" />
+
+  <!-- <EffectComposer v-if="allowComposer">
+    <UnrealBloom :radius="0.1" :strength="0.2" :threshold="1" />
+  </EffectComposer> -->
 </template>
