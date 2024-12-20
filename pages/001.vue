@@ -1,6 +1,5 @@
 <script setup>
 const config = useRuntimeConfig();
-console.log("Runtime config:", config.public.base);
 
 import { NoToneMapping } from "three";
 
@@ -10,13 +9,17 @@ const assets = ref({});
 const meshes = {
   diamond: config.public.base + "/models/diamond.glb",
 };
-const textures = {
-  1024: config.public.base + "/textures/001_1024.jpg",
+// const textures = {
+//   1024: config.public.base + "/textures/001_1024.jpg",
+// };
+const svgs = {
+  text: config.public.base + "/svgs/001-text.svg",
 };
 const hdr = config.public.base + "/textures/qwantani_dusk_2_1k.hdr";
 
 onMounted(async () => {
-  assets.value.textures = await loadThreeTextures(textures);
+  // assets.value.textures = await loadThreeTextures(textures);
+  assets.value.svgs = await loadThreeSVGs(svgs);
   assets.value.meshes = await loadThreeMeshes(meshes);
   assets.value.hdr = await loadThreeHDR(hdr);
 
@@ -25,24 +28,45 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
-    <TresCanvas clear-color="#FFFFFF" window-size :toneMapping="NoToneMapping">
-      <Scene001 v-if="ready" :assets="assets"></Scene001>
+  <main>
+    <TresCanvas
+      v-if="ready"
+      clear-color="#FFF8F0"
+      window-size
+      :toneMapping="NoToneMapping"
+    >
+      <Scene001 :assets="assets"></Scene001>
     </TresCanvas>
     <div id="overlay">
-      <p>DIAMONDS ARE FOREVER LIKE</p>
-      <p>OR REAL RAP SONGS LIKE C.R.E.A.M. OR MY MELODY</p>
+      <div class="scene-text" v-if="ready">
+        <p>DIAMONDS ARE FOREVER LIKE</p>
+        <p>OR REAL RAP SONGS LIKE C.R.E.A.M. OR MY MELODY</p>
+      </div>
+      <div class="scene-loading" v-else>
+        <p>Loading...</p>
+      </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <style scoped>
 #overlay {
   @apply fixed top-0 left-0 w-full h-full;
-  @apply flex flex-col items-center justify-between;
   @apply p-4;
   @apply pointer-events-none touch-none select-none;
 }
+#overlay div {
+  @apply w-full h-full;
+  @apply flex flex-col items-center;
+}
+
+.scene-text {
+  @apply justify-between;
+}
+.scene-loading {
+  @apply justify-center;
+}
+
 p {
   @apply text-center font-bold leading-4;
 }
