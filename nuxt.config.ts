@@ -4,7 +4,8 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   // ssr: false,
   app: {
-    baseURL: '/interactive-posters/'
+    baseURL: '/interactive-posters/',
+    cdnURL: 'https://asc4nio.github.io/interactive-posters/' //absolute URL to serve the public folder from (production-only).
   },
   modules: ["@tresjs/nuxt", "@nuxtjs/tailwindcss"],
   components: [
