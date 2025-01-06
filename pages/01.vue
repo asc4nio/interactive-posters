@@ -10,10 +10,10 @@ const meshes = {
   diamond: config.public.base + "/models/diamond.glb",
 };
 // const textures = {
-//   1024: config.public.base + "/textures/001_1024.jpg",
+//   1024: config.public.base + "/textures/01_1024.jpg",
 // };
 const svgs = {
-  text: config.public.base + "/svgs/001-text.svg",
+  text: config.public.base + "/svgs/01-text.svg",
 };
 const hdr = config.public.base + "/textures/qwantani_dusk_2_1k.hdr";
 
@@ -35,7 +35,7 @@ onMounted(async () => {
       window-size
       :toneMapping="NoToneMapping"
     >
-      <Scene001 :assets="assets"></Scene001>
+      <Scene01 :assets="assets"></Scene01>
     </TresCanvas>
     <div id="overlay">
       <div class="scene-text" v-if="ready">
